@@ -292,7 +292,7 @@ export default function Home() {
                       <input value={row.label} onChange={(event) => updateRow(index, "label", event.target.value)} autoComplete="off" />
                     </label>
                     <label className="field-value">
-                      Replacement
+                      Value
                       <input value={row.value} onChange={(event) => updateRow(index, "value", event.target.value)} autoComplete="off" />
                     </label>
                     <button type="button" className="icon-button" onClick={() => removeRow(index)} aria-label="Remove field">x</button>
