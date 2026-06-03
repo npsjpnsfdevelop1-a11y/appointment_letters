@@ -178,6 +178,37 @@ export default function Home() {
 
   function updateRow(index, key, value) {
     setRows((current) => current.map((row, rowIndex) => (rowIndex === index ? { ...row, [key]: value } : row)));
+    if (key === "value") {
+      const label = normalizeText(rows[index]?.label || "");
+      if (label === "employee name" || label === "annexure c name") {
+        setEmployeeName(value);
+      }
+      if (label === "employee detail" || label === "designation in agreement" || label === "annexure c designation") {
+        setDesignation(value);
+      }
+    }
+  }
+
+  function updateEmployeeName(value) {
+    setEmployeeName(value);
+    setRows((current) => current.map((row) => {
+      const label = normalizeText(row.label);
+      if (label === "employee name" || label === "annexure c name") {
+        return { ...row, value };
+      }
+      return row;
+    }));
+  }
+
+  function updateDesignation(value) {
+    setDesignation(value);
+    setRows((current) => current.map((row) => {
+      const label = normalizeText(row.label);
+      if (label === "employee detail" || label === "designation in agreement" || label === "annexure c designation") {
+        return { ...row, value };
+      }
+      return row;
+    }));
   }
 
   function addRow() {
@@ -243,11 +274,11 @@ export default function Home() {
           <div className="quick-fields">
             <label>
               Employee name
-              <input value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} placeholder="Akhil" autoComplete="name" />
+              <input value={employeeName} onChange={(event) => updateEmployeeName(event.target.value)} placeholder="Akhil" autoComplete="name" />
             </label>
             <label>
               Designation / details
-              <input value={designation} onChange={(event) => setDesignation(event.target.value)} placeholder="Software Developer" autoComplete="off" />
+              <input value={designation} onChange={(event) => updateDesignation(event.target.value)} placeholder="Software Developer" autoComplete="off" />
             </label>
           </div>
 
