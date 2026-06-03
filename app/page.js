@@ -216,19 +216,19 @@ export default function Home() {
               <div className="field-grid">
                 {rows.map((row, index) => (
                   <div className="field-row" key={`${row.label}-${index}`}>
-                    <label>
+                    <label className="field-label">
                       Label
                       <input value={row.label} onChange={(event) => updateRow(index, "label", event.target.value)} autoComplete="off" />
                     </label>
-                    <label>
+                    <label className="field-find">
                       Find in template
                       <input value={row.find} onChange={(event) => updateRow(index, "find", event.target.value)} autoComplete="off" />
                     </label>
-                    <label>
+                    <label className="field-value">
                       Replacement
                       <input value={row.value} onChange={(event) => updateRow(index, "value", event.target.value)} autoComplete="off" />
                     </label>
-                    <label>
+                    <label className="field-mode">
                       Mode
                       <select value={row.mode || "replace"} onChange={(event) => updateRow(index, "mode", event.target.value)}>
                         <option value="replace">Replace text</option>
@@ -293,28 +293,30 @@ function DataPreview({ preview, rows }) {
         <div><span>Annexure C Name</span><strong>{preview.annexureName || "Not set"}</strong></div>
         <div><span>Annexure C Designation</span><strong>{preview.annexureDesignation || "Not set"}</strong></div>
       </div>
-      <table className="preview-table">
-        <thead>
-          <tr>
-            <th>Field</th>
-            <th>Mode</th>
-            <th>Find</th>
-            <th>Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.length ? rows.map((row, index) => (
-            <tr key={`${row.label}-${index}`}>
-              <td>{row.label}</td>
-              <td>{row.mode === "nextCell" ? "Fill next cell" : "Replace text"}</td>
-              <td>{row.find}</td>
-              <td>{row.value}</td>
+      <div className="preview-table-wrap">
+        <table className="preview-table">
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Mode</th>
+              <th>Find</th>
+              <th>Value</th>
             </tr>
-          )) : (
-            <tr><td colSpan={4}>No export values set yet.</td></tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.length ? rows.map((row, index) => (
+              <tr key={`${row.label}-${index}`}>
+                <td>{row.label}</td>
+                <td>{row.mode === "nextCell" ? "Fill next cell" : "Replace text"}</td>
+                <td>{row.find}</td>
+                <td>{row.value}</td>
+              </tr>
+            )) : (
+              <tr><td colSpan={4}>No export values set yet.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </section>
   );
 }
