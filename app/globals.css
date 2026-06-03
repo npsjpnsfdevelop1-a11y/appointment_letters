@@ -26,6 +26,34 @@ select {
   padding: 22px 0 48px;
 }
 
+.gate-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.gate-card {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 14px;
+  border: 1px solid #ddd6ca;
+  border-radius: 8px;
+  background: #fffdf8;
+  padding: 24px;
+}
+
+.gate-card h1 {
+  margin-bottom: 4px;
+  font-size: 2rem;
+}
+
+.gate-error {
+  margin: 0;
+  color: #a33a2f;
+  font-weight: 800;
+}
+
 .hero {
   display: flex;
   justify-content: space-between;
@@ -197,7 +225,7 @@ h2 {
 
 .preview-table {
   width: 100%;
-  min-width: 620px;
+  min-width: 420px;
   border-collapse: collapse;
   background: #fff;
   font-size: 0.84rem;
@@ -235,10 +263,8 @@ h2 {
 
 .field-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 36px;
-  grid-template-areas:
-    "label value remove"
-    "find mode remove";
+  grid-template-columns: minmax(160px, 0.8fr) minmax(220px, 1.2fr) 36px;
+  grid-template-areas: "label value remove";
   gap: 8px 10px;
   align-items: end;
   padding: 10px;
@@ -251,16 +277,8 @@ h2 {
   grid-area: label;
 }
 
-.field-find {
-  grid-area: find;
-}
-
 .field-value {
   grid-area: value;
-}
-
-.field-mode {
-  grid-area: mode;
 }
 
 label {
@@ -325,7 +343,7 @@ button:disabled {
 .icon-button {
   grid-area: remove;
   min-width: 36px;
-  min-height: 84px;
+  min-height: 38px;
   padding: 0;
   background: #eee5da;
   color: #4b3f34;
@@ -353,8 +371,6 @@ button:disabled {
     grid-template-areas:
       "label"
       "value"
-      "find"
-      "mode"
       "remove";
   }
 

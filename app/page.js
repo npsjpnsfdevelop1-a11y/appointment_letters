@@ -35,6 +35,9 @@ const defaultRows = [
 export default function Home() {
   const [templateBytes, setTemplateBytes] = useState(null);
   const [status, setStatus] = useState("Loading Sample.docx");
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [password, setPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const [rows, setRows] = useState(defaultRows);
   const [employeeName, setEmployeeName] = useState("");
   const [designation, setDesignation] = useState("");
@@ -43,6 +46,10 @@ export default function Home() {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
+    if (window.sessionStorage.getItem("offer-generator-unlocked") === "true") {
+      setIsUnlocked(true);
+    }
+
     fetch(templateUrl, { cache: "no-store" })
       .then((response) => {
         if (!response.ok) throw new Error(`Template request failed: ${response.status}`);
@@ -57,6 +64,17 @@ export default function Home() {
         setStatus("Could not load Sample.docx");
       });
   }, []);
+
+  function unlockApp(event) {
+    event.preventDefault();
+    if (password === "npsjpn") {
+      window.sessionStorage.setItem("offer-generator-unlocked", "true");
+      setIsUnlocked(true);
+      setPasswordError("");
+      return;
+    }
+    setPasswordError("Incorrect password");
+  }
 
   const generationRows = useMemo(() => getRowsForGeneration(rows, employeeName, designation), [rows, employeeName, designation]);
   const activeRows = useMemo(
@@ -179,6 +197,28 @@ export default function Home() {
 
   const preview = makePreview(generationRows, rows, employeeName, designation, outputName);
 
+  if (!isUnlocked) {
+    return (
+      <main className="gate-page">
+        <form className="gate-card" onSubmit={unlockApp}>
+          <p className="eyebrow">Restricted</p>
+          <h1>Offer Letter Generator</h1>
+          <label>
+            Password
+            <input
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              type="password"
+              autoFocus
+            />
+          </label>
+          {passwordError ? <p className="gate-error">{passwordError}</p> : null}
+          <button type="submit">Open App</button>
+        </form>
+      </main>
+    );
+  }
+
   return (
     <main className="app">
       <section className="hero">
@@ -220,20 +260,9 @@ export default function Home() {
                       Label
                       <input value={row.label} onChange={(event) => updateRow(index, "label", event.target.value)} autoComplete="off" />
                     </label>
-                    <label className="field-find">
-                      Find in template
-                      <input value={row.find} onChange={(event) => updateRow(index, "find", event.target.value)} autoComplete="off" />
-                    </label>
                     <label className="field-value">
                       Replacement
                       <input value={row.value} onChange={(event) => updateRow(index, "value", event.target.value)} autoComplete="off" />
-                    </label>
-                    <label className="field-mode">
-                      Mode
-                      <select value={row.mode || "replace"} onChange={(event) => updateRow(index, "mode", event.target.value)}>
-                        <option value="replace">Replace text</option>
-                        <option value="nextCell">Fill next cell</option>
-                      </select>
                     </label>
                     <button type="button" className="icon-button" onClick={() => removeRow(index)} aria-label="Remove field">x</button>
                   </div>
@@ -298,22 +327,18 @@ function DataPreview({ preview, rows }) {
           <thead>
             <tr>
               <th>Field</th>
-              <th>Mode</th>
-              <th>Find</th>
               <th>Value</th>
             </tr>
           </thead>
           <tbody>
             {rows.length ? rows.map((row, index) => (
-              <tr key={`${row.label}-${index}`}>
-                <td>{row.label}</td>
-                <td>{row.mode === "nextCell" ? "Fill next cell" : "Replace text"}</td>
-                <td>{row.find}</td>
-                <td>{row.value}</td>
-              </tr>
-            )) : (
-              <tr><td colSpan={4}>No export values set yet.</td></tr>
-            )}
+            <tr key={`${row.label}-${index}`}>
+              <td>{row.label}</td>
+              <td>{row.value}</td>
+            </tr>
+          )) : (
+              <tr><td colSpan={2}>No export values set yet.</td></tr>
+          )}
           </tbody>
         </table>
       </div>
