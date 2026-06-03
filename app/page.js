@@ -37,6 +37,7 @@ export default function Home() {
   const [status, setStatus] = useState("Loading Sample.docx");
   const [rows, setRows] = useState(defaultRows);
   const [employeeName, setEmployeeName] = useState("");
+  const [designation, setDesignation] = useState("");
   const [fileName, setFileName] = useState("{{name}}_appointment_letter.docx");
   const [isGenerating, setIsGenerating] = useState(false);
   const [logs, setLogs] = useState([]);
@@ -57,7 +58,7 @@ export default function Home() {
       });
   }, []);
 
-  const generationRows = useMemo(() => getRowsForGeneration(rows, employeeName), [rows, employeeName]);
+  const generationRows = useMemo(() => getRowsForGeneration(rows, employeeName, designation), [rows, employeeName, designation]);
   const activeRows = useMemo(
     () => generationRows
       .map((row) => ({ find: row.find.trim(), value: sanitizeReplacement(row.value), mode: row.mode || "replace", label: row.label }))
@@ -172,10 +173,11 @@ export default function Home() {
   function resetRows() {
     setRows(defaultRows);
     setEmployeeName("");
+    setDesignation("");
     setFileName("{{name}}_appointment_letter.docx");
   }
 
-  const preview = makePreview(generationRows, rows, employeeName, outputName);
+  const preview = makePreview(generationRows, rows, employeeName, designation, outputName);
 
   return (
     <main className="app">
@@ -192,7 +194,7 @@ export default function Home() {
         <div className="panel-header">
           <div>
             <h2>Template Values</h2>
-            <p>Employee name fills the body, Annexure C, and output filename.</p>
+            <p>Name and designation/details fill every matching location in the document.</p>
           </div>
           <button type="button" className="secondary" onClick={addRow}>Add field</button>
         </div>
@@ -203,36 +205,46 @@ export default function Home() {
               Employee name
               <input value={employeeName} onChange={(event) => setEmployeeName(event.target.value)} placeholder="Akhil" autoComplete="name" />
             </label>
+            <label>
+              Designation / details
+              <input value={designation} onChange={(event) => setDesignation(event.target.value)} placeholder="Software Developer" autoComplete="off" />
+            </label>
           </div>
 
-          <DataPreview preview={preview} rows={activeRows} />
-          <ExportLogs logs={logs} />
-
-          <div className="field-grid">
-            {rows.map((row, index) => (
-              <div className="field-row" key={`${row.label}-${index}`}>
-                <label>
-                  Label
-                  <input value={row.label} onChange={(event) => updateRow(index, "label", event.target.value)} autoComplete="off" />
-                </label>
-                <label>
-                  Find in template
-                  <input value={row.find} onChange={(event) => updateRow(index, "find", event.target.value)} autoComplete="off" />
-                </label>
-                <label>
-                  Replacement
-                  <input value={row.value} onChange={(event) => updateRow(index, "value", event.target.value)} autoComplete="off" />
-                </label>
-                <label>
-                  Mode
-                  <select value={row.mode || "replace"} onChange={(event) => updateRow(index, "mode", event.target.value)}>
-                    <option value="replace">Replace text</option>
-                    <option value="nextCell">Fill next cell</option>
-                  </select>
-                </label>
-                <button type="button" className="icon-button" onClick={() => removeRow(index)} aria-label="Remove field">x</button>
+          <div className="workspace-grid">
+            <section className="editor-column">
+              <div className="field-grid">
+                {rows.map((row, index) => (
+                  <div className="field-row" key={`${row.label}-${index}`}>
+                    <label>
+                      Label
+                      <input value={row.label} onChange={(event) => updateRow(index, "label", event.target.value)} autoComplete="off" />
+                    </label>
+                    <label>
+                      Find in template
+                      <input value={row.find} onChange={(event) => updateRow(index, "find", event.target.value)} autoComplete="off" />
+                    </label>
+                    <label>
+                      Replacement
+                      <input value={row.value} onChange={(event) => updateRow(index, "value", event.target.value)} autoComplete="off" />
+                    </label>
+                    <label>
+                      Mode
+                      <select value={row.mode || "replace"} onChange={(event) => updateRow(index, "mode", event.target.value)}>
+                        <option value="replace">Replace text</option>
+                        <option value="nextCell">Fill next cell</option>
+                      </select>
+                    </label>
+                    <button type="button" className="icon-button" onClick={() => removeRow(index)} aria-label="Remove field">x</button>
+                  </div>
+                ))}
               </div>
-            ))}
+            </section>
+
+            <aside className="preview-column">
+              <DataPreview preview={preview} rows={activeRows} />
+              <ExportLogs logs={logs} />
+            </aside>
           </div>
 
           <label className="file-name">
@@ -276,8 +288,10 @@ function DataPreview({ preview, rows }) {
       <div className="preview-summary">
         <div><span>Output file</span><strong>{preview.outputName}</strong></div>
         <div><span>Employee name source</span><strong>{preview.employeeName || "Not set"}</strong></div>
+        <div><span>Designation/details source</span><strong>{preview.designation || "Not set"}</strong></div>
         <div><span>Body line preview</span><strong>{preview.documentLine}</strong></div>
         <div><span>Annexure C Name</span><strong>{preview.annexureName || "Not set"}</strong></div>
+        <div><span>Annexure C Designation</span><strong>{preview.annexureDesignation || "Not set"}</strong></div>
       </div>
       <table className="preview-table">
         <thead>
@@ -305,11 +319,15 @@ function DataPreview({ preview, rows }) {
   );
 }
 
-function getRowsForGeneration(rows, employeeName) {
+function getRowsForGeneration(rows, employeeName, designation) {
   const name = getEmployeeName(rows, employeeName);
+  const role = getDesignation(rows, designation);
   return rows.map((row) => {
     if (normalizeText(row.label) === "employee name" && name) return { ...row, value: name };
     if (normalizeText(row.label) === "annexure c name" && name) return { ...row, value: name };
+    if (normalizeText(row.label) === "employee detail" && role) return { ...row, value: role };
+    if (normalizeText(row.label) === "designation in agreement" && role) return { ...row, value: role };
+    if (normalizeText(row.label) === "annexure c designation" && role) return { ...row, value: role };
     return row;
   });
 }
@@ -322,17 +340,31 @@ function getEmployeeName(rows, employeeName) {
   return nameRow?.value?.trim() || "";
 }
 
-function makePreview(generationRows, rows, employeeName, outputName) {
+function getDesignation(rows, designation) {
+  if (designation.trim()) return designation.trim();
+  const designationRow = rows.find((row) => normalizeText(row.label) === "annexure c designation" && row.value.trim())
+    || rows.find((row) => normalizeText(row.label) === "designation in agreement" && row.value.trim())
+    || rows.find((row) => normalizeText(row.label) === "employee detail" && row.value.trim())
+    || rows.find((row) => row.find.trim() === "XVZ" && row.value.trim())
+    || rows.find((row) => row.find.trim() === "Senior Mistress" && row.value.trim());
+  return designationRow?.value?.trim() || "";
+}
+
+function makePreview(generationRows, rows, employeeName, designation, outputName) {
   const name = getEmployeeName(rows, employeeName);
+  const role = getDesignation(rows, designation);
   const bodyName = generationRows.find((row) => normalizeText(row.label) === "employee name")?.value || "";
   const annexureName = generationRows.find((row) => normalizeText(row.label) === "annexure c name")?.value || "";
   const employeeDetail = generationRows.find((row) => normalizeText(row.label) === "employee detail")?.value || "XVZ";
+  const annexureDesignation = generationRows.find((row) => normalizeText(row.label) === "annexure c designation")?.value || "";
 
   return {
     outputName,
     employeeName: name,
+    designation: role,
     documentLine: `${bodyName || "ABC"} - ${employeeDetail} ("Employee")`,
-    annexureName
+    annexureName,
+    annexureDesignation
   };
 }
 

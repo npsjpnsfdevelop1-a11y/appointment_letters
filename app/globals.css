@@ -103,12 +103,30 @@ h2 {
 
 .quick-fields {
   display: grid;
-  grid-template-columns: minmax(240px, 420px);
+  grid-template-columns: repeat(2, minmax(220px, 1fr));
+  gap: 12px;
   margin-bottom: 18px;
   padding: 14px;
   border: 1px solid #d8d0c2;
   border-radius: 8px;
   background: #f7f2e8;
+}
+
+.workspace-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.editor-column,
+.preview-column {
+  min-width: 0;
+}
+
+.preview-column {
+  position: sticky;
+  top: 16px;
 }
 
 .preview-panel {
@@ -195,7 +213,7 @@ h2 {
 
 .field-row {
   display: grid;
-  grid-template-columns: minmax(130px, 0.8fr) minmax(190px, 1.2fr) minmax(190px, 1.2fr) minmax(130px, 0.7fr) 40px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 40px;
   gap: 12px;
   align-items: end;
   padding: 12px;
@@ -282,8 +300,14 @@ button:disabled {
   }
 
   .preview-summary,
+  .quick-fields,
+  .workspace-grid,
   .field-row {
     grid-template-columns: 1fr;
+  }
+
+  .preview-column {
+    position: static;
   }
 
   .icon-button {
